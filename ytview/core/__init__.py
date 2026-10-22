@@ -1,0 +1,1 @@
+"""Core engine — orchestrates handler dispatch and worker lifecycle."""
