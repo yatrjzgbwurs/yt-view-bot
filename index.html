@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>yt-view-bot — YouTube View Bot for Windows</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg-deep: #070b1a;
+    --bg-mid: #0d1330;
+    --bg-soft: #131a3d;
+    --accent: #6c5ce7;
+    --accent-2: #00d2ff;
+    --accent-3: #ff4d6d;
+    --text: #e8ecff;
+    --muted: #9aa3c7;
+    --card: rgba(255, 255, 255, 0.04);
+    --card-border: rgba(255, 255, 255, 0.08);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: "Segoe UI", "Inter", system-ui, -apple-system, sans-serif;
+    background:
+      radial-gradient(1100px 600px at 15% -10%, rgba(108, 92, 231, 0.35), transparent 60%),
+      radial-gradient(900px 500px at 90% 0%, rgba(0, 210, 255, 0.18), transparent 55%),
+      radial-gradient(800px 700px at 50% 110%, rgba(255, 77, 109, 0.12), transparent 60%),
+      linear-gradient(160deg, #070b1a 0%, #0d1330 45%, #131a3d 100%);
+    background-attachment: fixed;
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  .container {
+    width: 100%;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ---------- NAV ---------- */
+  .nav-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 14px 0;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    background: rgba(10, 14, 34, 0.55);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: -0.02em;
+  }
+
+  .brand-mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    font-size: 1rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    box-shadow: 0 6px 18px rgba(108, 92, 231, 0.45);
+  }
+
+  .brand span { background: linear-gradient(90deg, #fff, #b9c2ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+  .nav-links {
+    display: flex;
+    gap: 30px;
+    font-size: 0.92rem;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .nav-links a { transition: color 0.2s; }
+  .nav-links a:hover { color: #fff; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 12px 22px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.25s ease, background 0.25s;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent) 0%, #8a7bff 50%, var(--accent-2) 100%);
+    color: #fff;
+    box-shadow: 0 10px 26px rgba(108, 92, 231, 0.4);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 36px rgba(108, 92, 231, 0.55);
+  }
+
+  .btn-ghost {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.14);
+    color: var(--text);
+  }
+
+  .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.09);
+    transform: translateY(-2px);
+  }
+
+  .btn-lg { padding: 15px 30px; font-size: 1.02rem; border-radius: 14px; }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    padding: 90px 0 70px;
+    text-align: center;
+    position: relative;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 16px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #c6ccff;
+    background: rgba(108, 92, 231, 0.14);
+    border: 1px solid rgba(108, 92, 231, 0.4);
+    box-shadow: 0 0 24px rgba(108, 92, 231, 0.25) inset;
+  }
+
+  .pill .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent-2);
+    box-shadow: 0 0 10px var(--accent-2);
+    animation: pulse 1.8s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(0.75); }
+  }
+
+  h1 {
+    font-size: clamp(2.3rem, 5.6vw, 4rem);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.035em;
+    margin: 26px auto 20px;
+    max-width: 860px;
+    background: linear-gradient(100deg, #ffffff 10%, #b7b0ff 45%, #59e3ff 85%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hero p.lead {
+    max-width: 660px;
+    margin: 0 auto 34px;
+    color: var(--muted);
+    font-size: 1.08rem;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 46px;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    max-width: 780px;
+    margin: 0 auto;
+  }
+
+  .stat-chip {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 16px 12px;
+    backdrop-filter: blur(8px);
+    transition: border-color 0.25s, transform 0.25s;
+  }
+
+  .stat-chip:hover { border-color: rgba(108, 92, 231, 0.5); transform: translateY(-3px); }
+
+  .stat-chip strong {
+    display: block;
+    font-size: 1.15rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, #fff, #9fe8ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .stat-chip span {
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  /* ---------- SECTION HEADERS ---------- */
+  section { padding: 74px 0; }
+
+  .section-head { text-align: center; margin-bottom: 48px; }
+
+  .eyebrow {
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+    margin-bottom: 12px;
+  }
+
+  h2 {
+    font-size: clamp(1.7rem, 3.6vw, 2.5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+  }
+
+  .section-head p {
+    color: var(--muted);
+    max-width: 560px;
+    margin: 14px auto 0;
+    font-size: 1rem;
+  }
+
+  /* ---------- FEATURES GRID ---------- */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .feature-card {
+    position: relative;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 18px;
+    padding: 30px 24px 26px;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+  }
+
+  .feature-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    opacity: 0.85;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-7px);
+    border-color: rgba(108, 92, 231, 0.55);
+    box-shadow: 0 22px 44px rgba(6, 8, 26, 0.65);
+  }
+
+  .feature-icon {
+    font-size: 1.7rem;
+    width: 52px; height: 52px;
+    display: grid; place-items: center;
+    border-radius: 14px;
+    background: rgba(108, 92, 231, 0.14);
+    border: 1px solid rgba(108, 92, 231, 0.3);
+    margin-bottom: 18px;
+  }
+
+  .feature-card h3 {
+    font-size: 1.08rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+
+  .feature-card p {
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  /* ---------- HOW IT WORKS ---------- */
+  .steps {
+    position: relative;
+    max-width: 720px;
+    margin: 0 auto;
+    padding-left: 34px;
+  }
+
+  .steps::before {
+    content: "";
+    position: absolute;
+    left: 19px;
+    top: 12px;
+    bottom: 12px;
+    width: 3px;
+    border-radius: 3px;
+    background: linear-gradient(180deg, var(--accent) 0%, var(--accent-2) 55%, var(--accent-3) 100%);
+    opacity: 0.75;
+  }
+
+  .step {
+    position: relative;
+    padding: 0 0 38px 26px;
+  }
+
+  .step:last-child { padding-bottom: 0; }
+
+  .step-num {
+    position: absolute;
+    left: -34px;
+    top: -2px;
+    width: 41px;
+    height: 41px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: #fff;
+    background: linear-gradient(135deg, var(--accent), #8a7bff);
+    border: 3px solid #0d1330;
+    box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.18);
+  }
+
+  .step h3 {
+    font-size: 1.08rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .step p {
+    color: var(--muted);
+    font-size: 0.93rem;
+  }
+
+  /* ---------- FAQ ---------- */
+  .faq-list {
+    max-width: 760px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  details {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 4px 22px;
+    backdrop-filter: blur(8px);
+    transition: border-color 0.25s, background 0.25s;
+  }
+
+  details[open] {
+    border-color: rgba(108, 92, 231, 0.5);
+    background: rgba(108, 92, 231, 0.07);
+  }
+
+  summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 0;
+    font-weight: 600;
+    font-size: 1rem;
+    user-select: none;
+  }
+
+  summary::-webkit-details-marker { display: none; }
+
+  .faq-plus {
+    flex-shrink: 0;
+    width: 26px; height: 26px;
+    position: relative;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    transition: transform 0.3s ease, background 0.3s;
+  }
+
+  .faq-plus::before,
+  .faq-plus::after {
+    content: "";
+    position: absolute;
+    top: 50%; left: 50%;
+    background: var(--text);
+    border-radius: 2px;
+    transform: translate(-50%, -50%);
+    transition: transform 0.3s ease, opacity 0.3s;
+  }
+
+  .faq-plus::before { width: 12px; height: 2px; }
+  .faq-plus::after { width: 2px; height: 12px; }
+
+  details[open] .faq-plus {
+    transform: rotate(45deg);
+    background: rgba(108, 92, 231, 0.35);
+  }
+
+  details p {
+    color: var(--muted);
+    font-size: 0.92rem;
+    padding: 0 0 20px;
+    max-width: 92%;
+  }
+
+  /* ---------- CTA BANNER ---------- */
+  .cta-banner {
+    position: relative;
+    overflow: hidden;
+    border-radius: 24px;
+    border: 1px solid rgba(108, 92, 231, 0.35);
+    background: linear-gradient(150deg, rgba(108, 92, 231, 0.18), rgba(0, 210, 255, 0.08) 60%, rgba(255, 77, 109, 0.08));
+    padding: 62px 32px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+  }
+
+  .cta-banner::before {
+    content: "";
+    position: absolute;
+    width: 620px; height: 620px;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(108, 92, 231, 0.45), transparent 65%);
+    pointer-events: none;
+  }
+
+  .cta-banner > * { position: relative; z-index: 1; }
+
+  .cta-banner h2 { margin-bottom: 14px; }
+
+  .cta-banner p {
+    color: var(--muted);
+    max-width: 520px;
+    margin: 0 auto 30px;
+  }
+
+  .cta-meta {
+    margin-top: 20px;
+    font-size: 0.8rem;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 34px 0;
+    margin-top: 20px;
+  }
+
+  .footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+    font-size: 0.86rem;
+    color: var(--muted);
+  }
+
+  .footer-inner a {
+    color: #b9c2ff;
+    font-weight: 600;
+    transition: color 0.2s;
+  }
+
+  .footer-inner a:hover { color: #fff; }
+
+  .footer-links { display: flex; gap: 22px; }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 900px) {
+    .features { grid-template-columns: repeat(2, 1fr); }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 640px) {
+    .nav-links { display: none; }
+    .nav .btn { padding: 10px 16px; font-size: 0.85rem; }
+    .hero { padding: 60px 0 50px; }
+    .hero-actions { flex-direction: column; align-items: stretch; }
+    .hero-actions .btn { width: 100%; }
+    .features { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: 1fr 1fr; gap: 10px; }
+    section { padding: 54px 0; }
+    .steps { padding-left: 28px; }
+    .steps::before { left: 15px; }
+    .step-num { left: -28px; width: 34px; height: 34px; font-size: 0.82rem; border-width: 2px; }
+    .step { padding-left: 20px; }
+    .cta-banner { padding: 44px 20px; }
+    .footer-inner { flex-direction: column; text-align: center; }
+    summary { font-size: 0.94rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= NAV ================= -->
+<div class="nav-wrap">
+  <div class="container nav">
+    <a class="brand" href="#top">
+      <span class="brand-mark">▶</span>
+      <span>yt-view-bot</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a class="btn btn-primary" href="https://gitscore.cc">Download</a>
+  </div>
+</div>
+
+<!-- ================= HERO ================= -->
+<header class="hero container" id="top">
+  <div class="pill"><span class="dot"></span>YouTube Viewer Bot</div>
+  <h1>Inflate YouTube views with multi-threaded precision</h1>
+  <p class="lead">
+    yt-view-bot is a Windows desktop tool that simulates real viewer behavior at scale —
+    proxy rotation, watch-time retention, and randomized user-agent &amp; device fingerprinting
+    for every single view.
+  </p>
+  <div class="hero-actions">
+    <a class="btn btn-primary btn-lg" href="https://gitscore.cc">⬇ Download for Windows</a>
+    <a class="btn btn-ghost btn-lg" href="https://gitscore.cc">★ View on GitHub</a>
+  </div>
+  <div class="stats">
+    <div class="stat-chip"><strong>42,800+</strong><span>Downloads</span></div>
+    <div class="stat-chip"><strong>v3.4.1</strong><span>Latest release</span></div>
+    <div class="stat-chip"><strong>Windows 10 / 11</strong><span>64-bit</span></div>
+    <div class="stat-chip"><strong>Free &amp; open source</strong><span>MIT license</span></div>
+  </div>
+</header>
+
+<!-- ================= FEATURES ================= -->
+<section id="features">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Capabilities</div>
+      <h2>Built for realistic, high-volume view inflation</h2>
+      <p>Every view is engineered to look organic — from the IP it originates from to the browser it pretends to be.</p>
+    </div>
+
+    <div class="features">
+      <div class="feature-card">
+        <div class="feature-icon">🧵</div>
+        <h3>Multi-threaded engine</h3>
+        <p>Spawn hundreds of concurrent worker threads with a configurable pool size, so view delivery scales without stalling.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌐</div>
+        <h3>Proxy rotation</h3>
+        <p>Rotate across HTTP, SOCKS4 and SOCKS5 proxy lists automatically, with health checks and dead-proxy failover between views.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⏱️</div>
+        <h3>Watch-time retention</h3>
+        <p>Set minimum and maximum retention windows so each view watches a randomized portion of the video instead of bouncing instantly.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎭</div>
+        <h3>Fingerprint randomization</h3>
+        <p>Each session gets a unique user-agent, viewport, platform string and device profile to avoid pattern detection.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Live task dashboard</h3>
+        <p>Track views dispatched, success rate, proxy status and thread activity in real time from the built-in Windows UI.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚙️</div>
+        <h3>Config profiles</h3>
+        <p>Save and load JSON profiles for threads, proxies, retention and delay ranges — switch campaigns in one click.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= HOW IT WORKS ================= -->
+<section id="how">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">How it works</div>
+      <h2>Three steps from download to dispatch</h2>
+      <p>No scripts, no command line — the Windows client handles everything.</p>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Download &amp; launch</h3>
+        <p>Grab the latest build from gitscore.cc, extract the archive and run <strong>yt-view-bot.exe</strong> on Windows 10 or 11. No installer required.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Configure targets &amp; proxies</h3>
+        <p>Paste your YouTube video URLs, load a proxy list, then set thread count, watch-time range and random delay intervals in the config panel.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Start the campaign</h3>
+        <p>Hit Start and the engine rotates proxies, generates fresh fingerprints and dispatches views in parallel while the dashboard reports progress.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section id="faq">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">FAQ</div>
+      <h2>Questions, answered</h2>
+    </div>
+
+    <div class="faq-list">
+      <details>
+        <summary>Is yt-view-bot really free and open source? <span class="faq-plus"></span></summary>
+        <p>Yes. The full source is published under the MIT license and every release is free to download. You can build the Windows binary yourself from the repository or grab the pre-compiled version from gitscore.cc.</p>
+      </details>
+      <details>
+        <summary>Do I need to supply my own proxies? <span class="faq-plus"></span></summary>
+        <p>The bot does not ship with a proxy pool. You provide an HTTP, SOCKS4 or SOCKS5 proxy list, and the rotation engine handles validation, health checks and failover automatically between views.</p>
+      </details>
+      <details>
+        <summary>How does watch-time retention work? <span class="faq-plus"></span></summary>
+        <p>
