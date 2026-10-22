@@ -1,0 +1,1 @@
+"""Feature handlers — one per stage of a simulated watch session."""
